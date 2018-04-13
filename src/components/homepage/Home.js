@@ -28,12 +28,10 @@ class Home extends React.Component {
     });
     let periods = this.props.periods.map(period => period.name);
     let periodTimes = this.props.periods.map(period => getTimesFromPeriod(period));
-    let types = ['100', '200', '300'];
-    let type_objs = [
-      {'course_num': '100'},
-      {'course_num': '200'},
-      {'course_num': '300'}
-    ];
+    let types = [...new Set(courses.map(course => course.course_level))]
+    let type_objs = types.map(level => {
+      return {'course_level': level};
+    });
     
     return (
       <div>
