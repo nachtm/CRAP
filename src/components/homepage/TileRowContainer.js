@@ -1,16 +1,16 @@
 import React from 'react';
 import Tile from './Tile'
+import QueryString from 'query-string';
 import './TileRowContainer.css';
 
 class TileRowContainer extends React.Component {
   render() {
   	let tiles = []
-    console.log("trc data: " + this.props.tiledata);
-  	for (let i = 0; i < this.props.tiledata.length; i++){
+  	for (let i = 0; i < this.props.displaydata.length; i++){
   	  tiles.push(
         <li>
-          <Tile key={i} num={i} contents={this.props.tiledata[i]} isGrid={false} 
-            queryRedirect={"/browse?"+this.props.field+"="+this.props.tiledata[i]}/>
+          <Tile key={i} num={i} contents={this.props.displaydata[i]} isGrid={false} 
+            queryRedirect={"/browse?" + QueryString.stringify(this.props.querydata[i])} />
         </li>
       );
   	}

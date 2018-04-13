@@ -1,6 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { fetchCourses } from '../../actions';
+import { fetchCourses, fetchPeriods } from '../../actions';
 import HeaderBar from './HeaderBar'
 import NavRow from './NavRow'
 import './Home.css';
@@ -8,58 +8,75 @@ import './Home.css';
 class Home extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { courses: [] };
+    this.state = { 
+      courses: [], 
+      periods: [] 
+    };
   }
 
   componentWillMount() {
     this.props.fetchCourses();
+    this.props.fetchPeriods();
   }
 
   render() {
-    // let depts = ['A', 'B', 'C', 'D', 'E', 'F'];
-    // let periods = ['1', '2', '3', '4', '5', '6', '7','8','9','0','1','2','3','4','5'];
-    // let types = ['100', '200', '300', 'D', 'Off-Campus', 'Comps'];
 
-    // let courseNames = this.props.courses.map(course => course.dept + course.course_num);
     let courses = this.props.courses;
     let departments = [...new Set(courses.map(course => course.dept))];
-    let times = courses.map(course => course.sched);
-    let periods = [];
-    for(let course_sched in times){
-      // let obj = JSON.parse(times[course_sched]);
-      let result = "";
-      for(let day in times[course_sched]){
-        if(times[course_sched][day]['start']){
-          result += day + ": " + times[course_sched][day]['start'] + "-" + times[course_sched][day]['end'] + "|";
-        }
-      }
-      if(result){
-        periods.push(result);
-      }
-    }
-    periods = periods.filter((x, i, a) => a.indexOf(x) == i);
+    let dept_objs = departments.map(dept => {
+      return {'dept': dept};
+    });
+    let periods = this.props.periods.map(period => period.name);
+    let periodTimes = this.props.periods.map(period => getTimesFromPeriod(period));
     let types = ['100', '200', '300'];
+    let type_objs = [
+      {'course_num': '100'},
+      {'course_num': '200'},
+      {'course_num': '300'}
+    ];
+    
     return (
       <div>
         <HeaderBar />
-        <NavRow category="Department" parity="even" first={true} tiledata={departments} field='dept' /> 
-        <NavRow category="Period" parity="odd" tiledata={periods} field='time' />
-        <NavRow category="Type" parity="even" tiledata={types} field='course_num' />
+        <NavRow category="Department" parity="even" first={true} displaydata={departments} querydata={dept_objs}/>
+        <NavRow category="Period" parity="odd" displaydata={periods} querydata={periodTimes} />
+        <NavRow category="Type" parity="even" displaydata={types} querydata={type_objs} />
         <button> Browse All </button>
       </div>
     );
   }
 }
 
+function getTimesFromPeriod(period) {
+  let timeList = Object.keys(period).map(key => {
+    if(getDates().includes(key)) {
+      let start = "sched." + key + ".start";
+      let end = "sched." + key + ".end";
+      let res = {};
+      res[start] = period[key]['start'];
+      res[end] = period[key]['end'];
+      return res;
+    }
+  }).filter(x => x !== undefined);
+
+  return Object.assign({}, ...timeList);
+}
+
+function getDates(){
+  return ["mon", "tue", "wed", "thu", "fri"];
+}
+
 function mapStateToProps(state) {
   return {
-    courses: state.courses
+    courses: state.courses,
+    periods: state.periods
   };
 }
 
 function mapDispatchToProps(dispatch) {
   return {
-    fetchCourses: () => dispatch(fetchCourses())
+    fetchCourses: () => dispatch(fetchCourses()),
+    fetchPeriods: () => dispatch(fetchPeriods())
   };
 }
 
